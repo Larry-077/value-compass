@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+
+# 说明：data/*.json 与 src/data/demo.js 为「真实 API 结果的示例缓存」，
+# 故意提交，使他人无需 key、无需等待即可看到真实结果。
+
+.claude/

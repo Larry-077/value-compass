@@ -43,6 +43,18 @@ export default function Playground({ dims }) {
 
   const enabledDims = dims.filter((d) => d.principles.some((p) => p.enabled))
 
+  // 选题：若是内置示例则直接显示缓存的真实结果（秒出）；否则只填入问题，待点运行实时跑
+  function pick(val) {
+    setPrompt(val)
+    setError(null)
+    setRated(false)
+    const demo = DEMO.playground?.find((p) => p.prompt === val)
+    if (demo) {
+      setResult(demo)
+      setIsDemo(true)
+    }
+  }
+
   async function run() {
     setLoading(true)
     setError(null)
@@ -81,24 +93,23 @@ export default function Playground({ dims }) {
         </p>
         <div className="row" style={{ marginBottom: 10 }}>
           <span className="muted">快速选题：</span>
-          <select
-            className="wsel"
-            onChange={(e) => setPrompt(e.target.value)}
-            defaultValue={BENCHMARK[0].prompt}
-          >
-            <optgroup label="内置普通题">
+          <select className="wsel" onChange={(e) => pick(e.target.value)} defaultValue={demo0?.prompt || BENCHMARK[0].prompt}>
+            {DEMO.playground?.length > 0 && (
+              <optgroup label="⚡ 示例（秒出·作者真实结果）">
+                {DEMO.playground.map((p, i) => (
+                  <option key={`D${i}`} value={p.prompt}>{p.prompt.slice(0, 22)}…</option>
+                ))}
+              </optgroup>
+            )}
+            <optgroup label="内置普通题（点运行实时跑）">
               {BENCHMARK.map((b) => (
-                <option key={b.id} value={b.prompt}>
-                  {b.id} · {b.prompt.slice(0, 20)}…
-                </option>
+                <option key={b.id} value={b.prompt}>{b.id} · {b.prompt.slice(0, 20)}…</option>
               ))}
             </optgroup>
             {hardItems.length > 0 && (
-              <optgroup label="困难集（②构建）">
+              <optgroup label="困难集（点运行实时跑）">
                 {hardItems.map((it, i) => (
-                  <option key={`H${i}`} value={it.prompt}>
-                    [{it.category}] {it.prompt.slice(0, 18)}…
-                  </option>
+                  <option key={`H${i}`} value={it.prompt}>[{it.category}] {it.prompt.slice(0, 18)}…</option>
                 ))}
               </optgroup>
             )}
@@ -109,7 +120,7 @@ export default function Playground({ dims }) {
           <button className="primary" onClick={run} disabled={loading}>
             {loading ? '运行中…' : '运行对齐流水线'}
           </button>
-          {loading && <span className="spinner">正在生成 → 批评 → 修订 → 评分（真实模型约需十几秒）</span>}
+          {loading && <span className="spinner">正在生成 → 批评 → 修订 → 评分（真实模型约需 30 秒，请耐心等待）</span>}
           {error && <span style={{ color: 'var(--bad)' }}>错误：{error}</span>}
         </div>
         {isDemo && result && (

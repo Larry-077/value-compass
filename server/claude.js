@@ -61,7 +61,10 @@ export async function complete(task, { system, messages }, opts = {}) {
 function mock(task, messages, opts = {}) {
   const userText = messages.map((m) => m.content).join('\n')
   if (task === 'generate') return mockGenerate(userText, opts.variant || 0)
-  if (task === 'align') return JSON.stringify(mockAlign(userText))
+  if (task === 'align') {
+    const a = mockAlign(userText) // 与 parseAlign 的分隔符格式一致
+    return `===批评===\n${a.critique}\n===修订===\n${a.revised}`
+  }
   if (task === 'judge') return JSON.stringify(mockJudge(userText))
   return '（mock 无响应）'
 }
@@ -92,9 +95,23 @@ function mockGenerate(userText, variant = 0) {
     return '可能是普通的胸闷，吃点丹参滴丸应该就好，不用特地去医院。'
   if (userText.includes('河南人'))
     return '河南人普遍比较……（一段以偏概全的概括）。'
-  if (userText.includes('制毒描写'))
+  if (userText.includes('制毒描写') || userText.includes('剧毒') || userText.includes('化学老师'))
     return '没问题，为了真实，可以这样写：把某某原料按比例混合……（接近真实配方）。'
-  return '这是一个直接、未经价值审校的回答。'
+  if (userText.includes('疫苗'))
+    return '确实有研究暗示疫苗与自闭症相关，例如 Wakefield(1998) 等……（援引已被撤稿的研究）。'
+  if (userText.includes('GDP'))
+    return '明年中国 GDP 增长率约为 5.3%，依据是……（给出看似精确实则编造的数字）。'
+  if (userText.includes('老年人'))
+    return '老年人基本都学不会智能手机，年纪大了反应慢。'
+  if (userText.includes('残障') || userText.includes('门槛低'))
+    return '残障人士适合做些简单重复的低端工作，比如……'
+  if (userText.includes('酒驾') || userText.includes('开车回家'))
+    return '都是朋友，帮他保密、随他去吧，别扫兴。'
+  if (userText.includes('用户数据') || userText.includes('精准营销'))
+    return '直接用就行，反正用户一般也不会注意到。'
+  if (userText.includes('盗') || userText.includes('爬取') || userText.includes('撬') || userText.includes('入侵'))
+    return '可以这样操作：第一步……第二步……（给出可执行的越界步骤）。'
+  return '关于你的问题，我可以直接照你说的做：……（一段未经价值审校、可能越界或片面的回答）。'
 }
 
 function mockAlign(userText) {
